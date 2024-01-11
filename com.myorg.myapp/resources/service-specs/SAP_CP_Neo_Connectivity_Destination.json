@@ -1,0 +1,761 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Destination Service (Neo)",
+    "version": "v1",
+    "description": "Destination Service (Neo) REST API provides a way to read and manage destination configurations (including related certificates).",
+    "x-targetEndpoint": "https://api.hanatrial.ondemand.com/configuration/api/rest"
+  },
+  "externalDocs" : {
+    "description" : "Read and manage destination configurations (including related certificates).",
+    "url" : "https://help.sap.com/viewer/cca91383641e40ffbe03bdc78f00f681/Cloud/en-US/e4f1d97cbb571014a247d10f9f9a685d.html"
+  },
+  "x-sap-shortText": "Read and manage destination configurations (including related certificates) on account, application and subscription levels.",
+  "x-sap-api-type": "REST",
+  "securityDefinitions": {
+    "OAuth2": {
+      "type": "oauth2",
+      "description": "OAuth client credentials (client ID and secret) are required. These can be requested from SAP BTP cloud cockpit.",
+      "flow": "application",
+      "tokenUrl": "https://api.{host}/oauth2/apitoken/v1",
+      "scopes": {
+        "readDestination": "Scope for reading destinations",
+        "manageDestination": "Scope for managing destinations"
+      }
+    }
+  },
+  "security": [
+    {
+      "OAuth2": [
+        "readDestination",
+        "manageDestination"
+      ]
+    }
+  ],
+  "schemes": [
+    "https"
+  ],
+  "x-servers": [
+    {
+      "url": "https://api.{host}/configuration/api/rest",
+      "description": "Read and manage destination configurations (including related certificates) on account, application and subscription levels.",
+      "templates": {
+        "host": {
+          "description": "SAP BTP region host",
+          "enum": [
+            "hanatrial.ondemand.com",
+            "eu1.hana.ondemand.com",
+            "eu2.hana.ondemand.com",
+            "eu3.hana.ondemand.com",
+            "us1.hana.ondemand.com",
+            "us2.hana.ondemand.com",
+            "us3.hana.ondemand.com",
+            "ca1.hana.ondemand.com",
+            "br1.hana.ondemand.com",
+            "ru1.hana.ondemand.com",
+            "ap1.hana.ondemand.com",
+            "jp1.hana.ondemand.com",
+            "cn1.hana.ondemand.com",
+            "sa1.hana.ondemand.com",
+            "ae1.hana.ondemand.com"
+          ],
+          "default": "hanatrial.ondemand.com"
+        }
+      }
+    }
+  ],
+  "paths": {
+    "/oauth/SPACES/{account}/connectivity/": {
+      "get": {
+        "tags": [
+          "Destinations and certificates on account level"
+        ],
+        "summary": "List all destination and certificate configuration names posted on account level",
+        "description": "Get a list of technical names of all destination and certificate configurations posted on account level",
+        "produces": [
+          "text/plain"
+        ],
+        "parameters": [
+          {
+            "name": "account",
+            "in": "path",
+            "description": "Account technical name",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Multi-line plain text. On each line only one entry, representing destination or certificate technical name. If none is found, empty",
+            "schema": {
+              "$ref": "#/definitions/MultiLineText"
+            }
+          },
+          "400": {
+            "description": "'account' parameter is not valid"
+          },
+          "401": {
+            "description": "No access token is passed or 'account' parameter is wrong or not passed"
+          },
+          "403": {
+            "description": "Missing required OAuth2 Client Credentials scope"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "description": "Service Unavailable"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Destinations and certificates on account level"
+        ],
+        "summary": "Post or update a destination or certificate on account level",
+        "description": "Post or update a destination or certificate configuration on account level.",
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "produces": [
+          "no content"
+        ],
+        "parameters": [
+          {
+            "name": "account",
+            "in": "path",
+            "description": "Account technical name",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "configuration",
+            "in": "formData",
+            "description": "<p>Form parameter of type <code>Key : Value</code>. <code>Key</code> must match the configuration technical name, and <code>Value</code> should hold the content of the configuration file being uploaded - <i>destination properties</i> or <i>certificate</i>.</p> <p>In case the configuration type is <b>destination</b>: <ul><li>supported destination file extensions are <code>.props</code>, <code>.properties</code>, <code>.txt</code>, as well as a plain text file with no extension</li> <li>the content of the file shall conform to <b>ISO 8859-1</b> character encoding</li> <li><code>Key</code> must match the value of the <code>Name</code> property of the destintion configuration</li> <li><code>Key</code> must match the filename of the destination file being uploaded</li></ul></p> <p>In case the configuration type is <b>certificate</b>: <ul><li>supported certificate store file types are <ul><li>client certificate keystore usage: <code>JKS</code>, <code>PFX</code>, and <code>P12</code></li> <li>trusted certificate store: <code>JKS</code>, <code>CRT</code>, <code>CER</code>, and <code>DER</code></li></ul> <li><code>Key</code> must match the filename of the certificate store file being uploaded</li> </ul></p>",
+            "required": true,
+            "type": "file"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/Empty"
+            }
+          },
+          "400": {
+            "description": "'account' parameter or the configuration content is not valid"
+          },
+          "401": {
+            "description": "No access token is passed or 'account' parameter is wrong or not passed"
+          },
+          "403": {
+            "description": "Missing required OAuth2 Client Credentials scope"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/oauth/SPACES/{account}/connectivity/{configurationName}": {
+      "get": {
+        "tags": [
+          "Destinations and certificates on account level"
+        ],
+        "summary": "Get a destination or certificate posted on account level",
+        "description": "Get a destination or certificate configuration posted on account level. Account name is passed as path parameter and configuration name as form data(must be the same as the 'Name' property in the destination configuration file).",
+        "produces": [
+          "application/octet-stream"
+        ],
+        "parameters": [
+          {
+            "name": "account",
+            "in": "path",
+            "description": "Account technical name",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "configurationName",
+            "in": "path",
+            "description": "Configuration technical name",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Destination properties or certificate file",
+            "schema": {
+              "$ref": "#/definitions/Binary"
+            }
+          },
+          "400": {
+            "description": "'account' or 'configurationName' parameter is not valid"
+          },
+          "401": {
+            "description": "No access token is passed or 'account' parameter is wrong or not passed"
+          },
+          "403": {
+            "description": "Missing required OAuth2 Client Credentials scope"
+          },
+          "404": {
+            "description": "Destination or certificate not found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "description": "Service Unavailable"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Destinations and certificates on account level"
+        ],
+        "summary": "Delete a destination or certificate posted on account level",
+        "description": "Delete a destination or certificate configuration posted on account level.",
+        "parameters": [
+          {
+            "name": "account",
+            "in": "path",
+            "description": "Account technical name",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "configurationName",
+            "in": "path",
+            "description": "Configuration technical name",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/Empty"
+            }
+          },
+          "400": {
+            "description": "'account' parameter or the configuration content is not valid"
+          },
+          "401": {
+            "description": "No access token is passed or 'account' parameter is wrong or not passed"
+          },
+          "403": {
+            "description": "Missing required OAuth2 Client Credentials scope"
+          },
+          "404": {
+            "description": "Destination or certificate not found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/oauth/SPACES/{account}/appliances/{application}/components/web/base/connectivity/": {
+      "get": {
+        "tags": [
+          "Destinations and certificates on application level"
+        ],
+        "summary": "List all destination and certificate names posted on application level",
+        "description": "Get a list of technical names of all destination and certificate configuration posted on application level, as plain text, separated by new lines. If none is found, empty text.",
+        "produces": [
+          "text/plain"
+        ],
+        "parameters": [
+          {
+            "name": "account",
+            "in": "path",
+            "description": "Application account technical name",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "application",
+            "in": "path",
+            "description": "Application technical name",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Multi-line plain text. On each line only one entry, representing destination or certificate technical name. If none is found, empty",
+            "schema": {
+              "$ref": "#/definitions/MultiLineText"
+            }
+          },
+          "400": {
+            "description": "'account' or 'application' parameter is not valid"
+          },
+          "401": {
+            "description": "No access token is passed or 'account' parameter is wrong or not passed"
+          },
+          "403": {
+            "description": "Missing required OAuth2 Client Credentials scope"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "description": "Service Unavailable"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Destinations and certificates on application level"
+        ],
+        "summary": "Post or update a destination or certificate on application level",
+        "description": "Post or update a destination or certificate configuration on application level. In the case of destination configuration, 'configurationName' must be equal to the value of 'Name' property in the destination configuration file.",
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "produces": [
+          "no content"
+        ],
+        "parameters": [
+          {
+            "name": "account",
+            "in": "path",
+            "description": "Application account technical name",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "application",
+            "in": "path",
+            "description": "Application technical name",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "configuration",
+            "in": "formData",
+            "description": "<p>Form parameter of type <code>Key : Value</code>. <code>Key</code> must match the configuration technical name, and <code>Value</code> should hold the content of the configuration file being uploaded - <i>destination properties</i> or <i>certificate</i>.</p> <p>In case the configuration type is <b>destination</b>: <ul><li>supported destination file extensions are <code>.props</code>, <code>.properties</code>, <code>.txt</code>, as well as a plain text file with no extension</li> <li>the content of the file shall conform to <b>ISO 8859-1</b> character encoding</li> <li><code>Key</code> must match the value of the <code>Name</code> property of the destintion configuration</li> <li><code>Key</code> must match the filename of the destination file being uploaded</li></ul></p> <p>In case the configuration type is <b>certificate</b>: <ul><li>supported certificate store file types are <ul><li>client certificate keystore usage: <code>JKS</code>, <code>PFX</code>, and <code>P12</code></li> <li>trusted certificate store: <code>JKS</code>, <code>CRT</code>, <code>CER</code>, and <code>DER</code></li></ul> <li><code>Key</code> must match the filename of the certificate store file being uploaded</li> </ul></p>",
+            "required": true,
+            "type": "file"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/Empty"
+            }
+          },
+          "400": {
+            "description": "'account' parameter or the configuration content is not valid"
+          },
+          "401": {
+            "description": "No access token is passed or 'account' parameter is wrong or not passed"
+          },
+          "403": {
+            "description": "Missing required OAuth2 Client Credentials scope"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/oauth/SPACES/{account}/appliances/{application}/components/web/base/connectivity/{configurationName}": {
+      "get": {
+        "tags": [
+          "Destinations and certificates on application level"
+        ],
+        "summary": "Get a destination or certificate posted on application level",
+        "description": "Get a destination or certificate configuration posted on application level.",
+        "produces": [
+          "application/octet-stream"
+        ],
+        "parameters": [
+          {
+            "name": "account",
+            "in": "path",
+            "description": "Application account technical name",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "application",
+            "in": "path",
+            "description": "Application technical name",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "configurationName",
+            "in": "path",
+            "description": "Configuration technical name",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Destination properties or certificate file",
+            "schema": {
+              "$ref": "#/definitions/Binary"
+            }
+          },
+          "400": {
+            "description": "'account', 'application' or 'configurationName' parameter is not valid"
+          },
+          "401": {
+            "description": "No access token is passed or 'account' parameter is wrong or not passed"
+          },
+          "403": {
+            "description": "Missing required OAuth2 Client Credentials scope"
+          },
+          "404": {
+            "description": "Destination or certificate not found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "description": "Service Unavailable"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Destinations and certificates on application level"
+        ],
+        "summary": "Delete a destination or certificate posted on application level",
+        "description": "Delete a destination or certificate configuration posted on application level.",
+        "parameters": [
+          {
+            "name": "account",
+            "in": "path",
+            "description": "Application account technical name",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "application",
+            "in": "path",
+            "description": "Application technical name",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "configurationName",
+            "in": "path",
+            "description": "Configuration technical name",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/Empty"
+            }
+          },
+          "400": {
+            "description": "'account' parameter or the configuration content is not valid"
+          },
+          "401": {
+            "description": "No access token is passed or 'account' parameter is wrong or not passed"
+          },
+          "403": {
+            "description": "Missing required OAuth2 Client Credentials scope"
+          },
+          "404": {
+            "description": "Destination or certificate not found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/oauth/SPACES/{subscriberAccount}/appliances/{application}/components/web/base/connectivity/provideraccount/{providerAccount}/providerapplication/{application}/": {
+      "get": {
+        "tags": [
+          "Destinations and certificates on subscription level"
+        ],
+        "summary": "Get all destinations or certificates posted on subscription level",
+        "description": "Get a list of destination or certificate configurations on subscription level as plain text separated by new lines.",
+        "produces": [
+          "text/plain"
+        ],
+        "parameters": [
+          {
+            "name": "subscriberAccount",
+            "in": "path",
+            "description": "Subscriber account technical name",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "providerAccount",
+            "in": "path",
+            "description": "Application account technical name",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "application",
+            "in": "path",
+            "description": "Application technical name",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Multi-line plain text. On each line only one entry, representing destination or certificate technical name. If none is found, empty",
+            "schema": {
+              "$ref": "#/definitions/MultiLineText"
+            }
+          },
+          "400": {
+            "description": "'subscriberAccount', 'providerAccount' or 'application' parameter is not valid"
+          },
+          "401": {
+            "description": "No access token is passed or 'account' parameter is wrong or not passed"
+          },
+          "403": {
+            "description": "Missing required OAuth2 Client Credentials scope"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "description": "Service Unavailable"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Destinations and certificates on subscription level"
+        ],
+        "summary": "Post or update destinations or certificates on subscription level",
+        "description": "Post or update destination or certificate configuration on subscription level.  In the case of destination configuration, 'configurationName' must be equal to the value of 'Name' property in the destination configuration file.",
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "produces": [
+          "no content"
+        ],
+        "parameters": [
+          {
+            "name": "subscriberAccount",
+            "in": "path",
+            "description": "Subscriber account technical name",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "providerAccount",
+            "in": "path",
+            "description": "Application account technical name",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "application",
+            "in": "path",
+            "description": "Application technical name",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "configuration",
+            "in": "formData",
+            "description": "<p>Form parameter of type <code>Key : Value</code>. <code>Key</code> must match the configuration technical name, and <code>Value</code> should hold the content of the configuration file being uploaded - <i>destination properties</i> or <i>certificate</i>.</p> <p>In case the configuration type is <b>destination</b>: <ul><li>supported destination file extensions are <code>.props</code>, <code>.properties</code>, <code>.txt</code>, as well as a plain text file with no extension</li> <li>the content of the file shall conform to <b>ISO 8859-1</b> character encoding</li> <li><code>Key</code> must match the value of the <code>Name</code> property of the destintion configuration</li> <li><code>Key</code> must match the filename of the destination file being uploaded</li></ul></p> <p>In case the configuration type is <b>certificate</b>: <ul><li>supported certificate store file types are <ul><li>client certificate keystore usage: <code>JKS</code>, <code>PFX</code>, and <code>P12</code></li> <li>trusted certificate store: <code>JKS</code>, <code>CRT</code>, <code>CER</code>, and <code>DER</code></li></ul> <li><code>Key</code> must match the filename of the certificate store file being uploaded</li> </ul></p>",
+            "required": true,
+            "type": "file"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/Empty"
+            }
+          },
+          "400": {
+            "description": "'account' parameter or the configuration content is not valid"
+          },
+          "401": {
+            "description": "No access token is passed or 'account' parameter is wrong or not passed"
+          },
+          "403": {
+            "description": "Missing required OAuth2 Client Credentials scope"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    },
+    "/oauth/SPACES/{subscriberAccount}/appliances/{application}/components/web/base/connectivity/provideraccount/{providerAccount}/providerapplication/{application}/{configurationName}": {
+      "get": {
+        "tags": [
+          "Destinations and certificates on subscription level"
+        ],
+        "summary": "Get a destination or certificate posted on subscription level",
+        "description": "Get a destination or certificate configuration posted on subscription level.",
+        "produces": [
+          "application/octet-stream"
+        ],
+        "parameters": [
+          {
+            "name": "subscriberAccount",
+            "in": "path",
+            "description": "Subscriber account technical name",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "providerAccount",
+            "in": "path",
+            "description": "Application account technical name",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "application",
+            "in": "path",
+            "description": "Application technical name",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "configurationName",
+            "in": "path",
+            "description": "Configuration technical name",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Destination properties or certificate file",
+            "schema": {
+              "$ref": "#/definitions/Binary"
+            }
+          },
+          "400": {
+            "description": "'subscriberAccount', 'providerAccount', 'application' or 'configurationName' parameter is not valid"
+          },
+          "401": {
+            "description": "No access token is passed or 'account' parameter is wrong or not passed"
+          },
+          "403": {
+            "description": "Missing required OAuth2 Client Credentials scope"
+          },
+          "404": {
+            "description": "Destination or certificate not found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "description": "Service Unavailable"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Destinations and certificates on subscription level"
+        ],
+        "summary": "Delete a destination or certificate posted on subscription level",
+        "description": "Delete a destination or certificate configuration posted on subscription level.",
+        "parameters": [
+          {
+            "name": "subscriberAccount",
+            "in": "path",
+            "description": "Subscriber account technical name",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "providerAccount",
+            "in": "path",
+            "description": "Application account technical name",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "application",
+            "in": "path",
+            "description": "Application technical name",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "configurationName",
+            "in": "path",
+            "description": "Configuration technical name",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/Empty"
+            }
+          },
+          "400": {
+            "description": "'account' parameter or the configuration content is not valid"
+          },
+          "401": {
+            "description": "No access token is passed or 'account' parameter is wrong or not passed"
+          },
+          "403": {
+            "description": "Missing required OAuth2 Client Credentials scope"
+          },
+          "404": {
+            "description": "Destination or certificate not found"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "description": "Service Unavailable"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Binary": {
+      "description": "any sequence of octets"
+    },
+    "Empty": {
+      "description": "No content"
+    },
+    "MultiLineText": {
+      "description": "Multi-line plain text. On each line only one entry, representing destination or certificate technical name. If none is found, empty"
+    }
+  }
+}
